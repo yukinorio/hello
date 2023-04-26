@@ -1,2 +1,34 @@
-"test" 
-"hello.git.b" 
+import json
+from pygltflib import GLTF2
+from geojson import Point, Feature, FeatureCollection
+
+def glb_to_geojson(input_glb, output_geojson):
+    gltf = GLTF2().load(input_glb)
+
+    features = []
+    for accessor_idx, accessor in enumerate(gltf.accessors):
+        if accessor.type == "VEC3" and accessor.componentType == 5126:  # VEC3 and type Float32
+            buffer_view = gltf.bufferViews[accessor.bufferView]
+            buffer = gltf.buffers[buffer_view.buffer]
+
+            coords = []
+            for i in range(accessor.count):
+                byte_offset = buffer_view.byteOffset + accessor.byteOffset + (i * accessor.byteStride)
+                coord = struct.unpack_from('<fff', buffer.data, byte_offset)
+                coords.append(coord)
+
+            for coord in coords:
+                point = Point((coord[0], coord[1], coord[2]))
+                feature = Feature(geometry=point)
+                features.append(feature)
+
+    feature_collection = FeatureCollection(features)
+
+    with open(output_geojson, "w") as f:
+        f.write(json.dumps(feature_collection))
+
+# Replace the paths with the actual file paths
+input_glb = 'path/to/your/glb/file.glb'
+output_geojson = 'path/to/output/geojson/file.geojson'
+
+glb_to_geojson(input_glb, output_geojson)
