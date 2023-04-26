@@ -1,4 +1,5 @@
 import json
+import struct
 from pygltflib import GLTF2
 from geojson import Point, Feature, FeatureCollection
 
@@ -7,7 +8,7 @@ def glb_to_geojson(input_glb, output_geojson):
 
     features = []
     for accessor_idx, accessor in enumerate(gltf.accessors):
-        if accessor.type == "VEC3" and accessor.componentType == 5126:  # VEC3 and type Float32
+        if accessor.type == "VEC3" and accessor.componentType == 5126 and accessor.bufferView is not None:  # VEC3 and type Float32
             buffer_view = gltf.bufferViews[accessor.bufferView]
             buffer = gltf.buffers[buffer_view.buffer]
 
