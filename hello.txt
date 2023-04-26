@@ -33,3 +33,25 @@ input_glb = 'path/to/your/glb/file.glb'
 output_geojson = 'path/to/output/geojson/file.geojson'
 
 glb_to_geojson(input_glb, output_geojson)
+
+
+
+from pygltflib import GLTF2
+
+def explore_glb(input_glb):
+    gltf = GLTF2().load(input_glb)
+
+    print("Accessors:")
+    for i, accessor in enumerate(gltf.accessors):
+        print(f"  Accessor {i}: Type: {accessor.type}, ComponentType: {accessor.componentType}, BufferView: {accessor.bufferView}")
+
+    print("\nBuffer Views:")
+    for i, buffer_view in enumerate(gltf.bufferViews):
+        print(f"  BufferView {i}: Buffer: {buffer_view.buffer}, ByteOffset: {buffer_view.byteOffset}, ByteLength: {buffer_view.byteLength}")
+
+    print("\nBuffers:")
+    for i, buffer in enumerate(gltf.buffers):
+        print(f"  Buffer {i}: ByteLength: {buffer.byteLength}")
+
+input_glb = 'path/to/your/glb/file.glb'
+explore_glb(input_glb)
