@@ -76,7 +76,20 @@ explore_glb(input_glb)
 <body>
   <div id="cesiumContainer"></div>
   <script>
-    // CesiumJSコードはここに入ります
+    // CesiumJSのビューワーを作成
+var viewer = new Cesium.Viewer('cesiumContainer', {
+  terrainProvider: Cesium.createWorldTerrain()
+});
+
+// タイルセットを読み込み
+var tileset = viewer.scene.primitives.add(
+  new Cesium.Cesium3DTileset({
+    url: 'path/to/your/tileset.json'
+  })
+);
+
+// タイルセットが読み込まれた後、カメラを移動
+viewer.zoomTo(tileset);
   </script>
 </body>
 </html>
