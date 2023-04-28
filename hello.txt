@@ -45,6 +45,63 @@ with open("output.geojson", "w") as f:
 
 
 
+import json
+from lxml import etree
+from shapely.geometry import Polygon
+
+def citygml_v1_to_geojson(input_file, output_file):
+    # XML ファイルをパースする
+    tree = etree.parse(input_file)
+    root = tree.getroot()
+
+    # 名前空間を取得する
+    ns = root.nsmap
+    ns_gml = "{" + ns["gml"] + "}"
+    ns_citygml = "{" + ns["citygml"] + "}"
+
+    # GeoJSON 用の features を格納するリストを初期化する
+    features = []
+
+    # 建物情報を取得する
+    buildings = root.findall(".//" + ns_citygml + "Building")
+    for building in buildings:
+        # 建物のポリゴン情報を取得する
+        polygons = building.findall(".//" + ns_gml + "Polygon")
+        for polygon in polygons:
+            # 座標を取得する
+            pos_list = polygon.find(".//" + ns_gml + "posList")
+            coordinates = [float(coord) for coord in pos_list.text.split()]
+
+            # 座標を組み替えて (x, y) タプルのリストにする
+            reshaped_coordinates = [(coordinates[i], coordinates[i + 1]) for i in range(0, len(coordinates), 2)]
+
+            # Shapely の Polygon オブジェクトを作成する
+            shapely_polygon = Polygon(reshaped_coordinates)
+
+            # GeoJSON 形式の feature を作成する
+            feature = {
+                "type": "Feature",
+                "geometry": shapely.geometry.mapping(shapely_polygon),
+                "properties": {}  # 必要に応じて CityGML から追加のプロパティを抽出
+            }
+
+            # features リストに追加する
+            features.append(feature)
+
+    # GeoJSON オブジェクトを作成する
+    geojson = {
+        "type": "FeatureCollection",
+        "features": features
+    }
+
+    # GeoJSON ファイルに出力する
+    with open(output_file, "w") as f:
+        json.dump(geojson, f, indent=2)
+
+# 使用例
+input_file = "path/to/your/citygml_v1_file.gml"
+output_file = "path/to/your/output.geojson"
+citygml_v1_to_geojson(input_file, output_file)
 
 
 
