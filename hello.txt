@@ -1,27 +1,47 @@
-from pygltflib import GLTF
-import geojson
+import json
+from lxml import etree
+import pyproj
+from geojson import Feature, Point, FeatureCollection
 
-# GLTFファイルを読み込む
-gltf = GLTF.load("path/to/your/gltf_file.gltf")
 
-# 頂点座標を抽出する
-vertex_positions = []
+def citygml_to_geojson(citygml_file):
+    tree = etree.parse(citygml_file)
+    root = tree.getroot()
 
-for buffer_view in gltf.bufferViews:
-    if buffer_view.target == GLTF.TARGET_ARRAY_BUFFER:
-        accessor = gltf.accessors[buffer_view.buffer]
-        if accessor.type == "VEC3" and accessor.componentType == GLTF.COMPONENT_TYPE_FLOAT:
-            vertex_positions.extend(accessor.data)
+    nsmap = {
+        "gml": "http://www.opengis.net/gml",
+        "citygml": "http://www.opengis.net/citygml/2.0"
+    }
 
-# 頂点座標からGeoJSONポイントを作成
-geojson_points = [geojson.Point((position[1], position[0])) for position in vertex_positions]
+    pos_elements = root.xpath("//gml:pos", namespaces=nsmap)
+    coordinates = []
 
-# GeoJSON FeatureCollectionにまとめる
-geojson_feature_collection = geojson.FeatureCollection([geojson.Feature(geometry=point) for point in geojson_points])
+    for pos_element in pos_elements:
+        coord = list(map(float, pos_element.text.split()))
+        coordinates.append(coord)
 
-# GeoJSONファイルに保存
+    # 座標変換
+    in_proj = pyproj.Proj("EPSG:2443")  # CityGMLのEPSGコードに合わせて変更してください
+    out_proj = pyproj.Proj("EPSG:4326")
+
+    features = []
+    for coord in coordinates:
+        x, y = pyproj.transform(in_proj, out_proj, coord[0], coord[1])
+        point = Point((x, y))
+        feature = Feature(geometry=point)
+        features.append(feature)
+
+    feature_collection = FeatureCollection(features)
+
+    return feature_collection
+
+
+citygml_file = "path/to/your/citygml/file.gml"
+geojson_data = citygml_to_geojson(citygml_file)
+
 with open("output.geojson", "w") as f:
-    geojson.dump(geojson_feature_collection, f)
+    json.dump(geojson_data, f, ensure_ascii=False, indent=2)
+
 
 
 
