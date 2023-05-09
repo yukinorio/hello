@@ -37,13 +37,24 @@ https://github.com/mrdoob/three.js/blob/master/examples/jsm/controls/OrbitContro
     scene.add(directionalLight);
 
     // Load the GLTF models
-    const loader = new GLTFLoader();
-    loader.load('model1.gltf', (gltf) => {
-      scene.add(gltf.scene);
-    });
-    loader.load('model2.gltf', (gltf) => {
-      scene.add(gltf.scene);
-    });
+loader.load('model1.gltf', (gltf) => {
+  gltf.scene.traverse((child) => {
+    if (child.material && child.material.transparent) {
+      child.renderOrder = 1;
+    }
+  });
+  scene.add(gltf.scene);
+});
+
+loader.load('model2.gltf', (gltf) => {
+  gltf.scene.traverse((child) => {
+    if (child.material && child.material.transparent) {
+      child.renderOrder = 2;
+    }
+  });
+  scene.add(gltf.scene);
+});
+
 
     // Add OrbitControls
     const controls = new OrbitControls(camera, renderer.domElement);
