@@ -2,18 +2,12 @@
 public void testRequest() {
     WebClient webClientMock = Mockito.mock(WebClient.class);
     WebClient.Builder builderMock = Mockito.mock(WebClient.Builder.class);
-    ExchangeFunction exchangeFunctionMock = Mockito.mock(ExchangeFunction.class);
     WebClient.RequestHeadersSpec requestHeadersMock = Mockito.mock(WebClient.RequestHeadersSpec.class);
     WebClient.RequestHeadersUriSpec requestHeadersUriMock = Mockito.mock(WebClient.RequestHeadersUriSpec.class);
     WebClient.ResponseSpec responseSpecMock = Mockito.mock(WebClient.ResponseSpec.class);
-    DefaultUriBuilderFactory defaultUriBuilderFactoryMock = Mockito.mock(DefaultUriBuilderFactory.class);
 
     Mockito.when(builderMock.build()).thenReturn(webClientMock);
-    Mockito.when(builderMock.exchangeFunction(exchangeFunctionMock)).thenReturn(builderMock);
-    Mockito.when(builderMock.defaultHeader(anyString(), anyString())).thenReturn(builderMock);
-    Mockito.when(builderMock.defaultCookie(anyString(), anyString())).thenReturn(builderMock);
-    Mockito.when(builderMock.codecs(any())).thenReturn(builderMock);
-    Mockito.when(builderMock.defaultUriBuilderFactory(defaultUriBuilderFactoryMock)).thenReturn(builderMock);
+    Mockito.when(builderMock.baseUrl(anyString())).thenReturn(builderMock);
     Mockito.when(webClientMock.get()).thenReturn(requestHeadersUriMock);
     Mockito.when(requestHeadersUriMock.uri(anyString())).thenReturn(requestHeadersMock);
     Mockito.when(requestHeadersMock.retrieve()).thenReturn(responseSpecMock);
@@ -25,4 +19,3 @@ public void testRequest() {
         System.out.println(result);  // prints: "Mock response"
     }
 }
-
