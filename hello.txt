@@ -1,29 +1,20 @@
-import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
-import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
+@Test
+public void testRequest() {
+    WebClient webClientMock = Mockito.mock(WebClient.class);
+    WebClient.Builder builderMock = Mockito.mock(WebClient.Builder.class);
+    WebClient.RequestHeadersSpec requestHeadersMock = Mockito.mock(WebClient.RequestHeadersSpec.class);
+    WebClient.RequestHeadersUriSpec requestHeadersUriMock = Mockito.mock(WebClient.RequestHeadersUriSpec.class);
+    WebClient.ResponseSpec responseSpecMock = Mockito.mock(WebClient.ResponseSpec.class);
 
-import static org.mockito.ArgumentMatchers.anyString;
+    Mockito.when(builderMock.build()).thenReturn(webClientMock);
+    Mockito.when(webClientMock.get()).thenReturn(requestHeadersUriMock);
+    Mockito.when(requestHeadersUriMock.uri(anyString())).thenReturn(requestHeadersMock);
+    Mockito.when(requestHeadersMock.retrieve()).thenReturn(responseSpecMock);
+    Mockito.when(responseSpecMock.bodyToMono(String.class)).thenReturn(Mono.just("Mock response"));
 
-public class MyClassUtilsTest {
-
-    @Test
-    public void testRequest() {
-        WebClient webClientMock = Mockito.mock(WebClient.class);
-        WebClient.RequestHeadersSpec requestHeadersMock = Mockito.mock(WebClient.RequestHeadersSpec.class);
-        WebClient.RequestHeadersUriSpec requestHeadersUriMock = Mockito.mock(WebClient.RequestHeadersUriSpec.class);
-        WebClient.ResponseSpec responseSpecMock = Mockito.mock(WebClient.ResponseSpec.class);
-
-        Mockito.when(webClientMock.get()).thenReturn(requestHeadersUriMock);
-        Mockito.when(requestHeadersUriMock.uri(anyString())).thenReturn(requestHeadersMock);
-        Mockito.when(requestHeadersMock.retrieve()).thenReturn(responseSpecMock);
-        Mockito.when(responseSpecMock.bodyToMono(String.class)).thenReturn(Mono.just("Mock response"));
-
-        try (MockedStatic<WebClient> webClientMockedStatic = Mockito.mockStatic(WebClient.class)) {
-            webClientMockedStatic.when(() -> WebClient.create(anyString())).thenReturn(webClientMock);
-            String result = MyClassUtils.request("http://localhost");
-            System.out.println(result);  // prints: "Mock response"
-        }
+    try (MockedStatic<WebClient> webClientMockedStatic = Mockito.mockStatic(WebClient.class)) {
+        webClientMockedStatic.when(WebClient::builder).thenReturn(builderMock);
+        String result = MyClassUtils.request("http://localhost");
+        System.out.println(result);  // prints: "Mock response"
     }
 }
