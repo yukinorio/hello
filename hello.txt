@@ -1,68 +1,29 @@
-class MyClassUtilsTest {
-
-    @Test
-    void testMyClassUtils() {
-        // WebClientのモックを作成
-        WebClient webClient = Mockito.mock(WebClient.class);
-        WebClient.RequestHeadersSpec requestHeadersMock = Mockito.mock(WebClient.RequestHeadersSpec.class);
-        WebClient.RequestHeadersUriSpec requestHeadersUriMock = Mockito.mock(WebClient.RequestHeadersUriSpec.class);
-        WebClient.ResponseSpec responseSpecMock = Mockito.mock(WebClient.ResponseSpec.class);
-
-        when(webClient.get()).thenReturn(requestHeadersUriMock);
-        when(requestHeadersUriMock.uri(any(String.class))).thenReturn(requestHeadersMock);
-        when(requestHeadersMock.retrieve()).thenReturn(responseSpecMock);
-        
-        //正常系のテスト
-        when(responseSpecMock.bodyToMono(String.class)).thenReturn(Mono.just("Success Response"));
-        
-        // MyClassUtilsにWebClientモックを注入
-        MyClassUtils.setWebClient(webClient);
-        
-        // MyClassUtilsのテスト
-        String response = MyClassUtils.request("http://localhost");
-        System.out.println(response); // "Success Response"
-    }
-}import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.anyString;
 
-public class WebClientTest {
+public class MyClassUtilsTest {
 
     @Test
-    public void testWebClient() {
-        // WebClientのモックを作成
-        WebClient webClient = Mockito.mock(WebClient.class);
+    public void testRequest() {
+        WebClient webClientMock = Mockito.mock(WebClient.class);
         WebClient.RequestHeadersSpec requestHeadersMock = Mockito.mock(WebClient.RequestHeadersSpec.class);
         WebClient.RequestHeadersUriSpec requestHeadersUriMock = Mockito.mock(WebClient.RequestHeadersUriSpec.class);
         WebClient.ResponseSpec responseSpecMock = Mockito.mock(WebClient.ResponseSpec.class);
 
-        when(webClient.get()).thenReturn(requestHeadersUriMock);
-        when(requestHeadersUriMock.uri(Mockito.anyString())).thenReturn(requestHeadersMock);
-        when(requestHeadersMock.retrieve()).thenReturn(responseSpecMock);
+        Mockito.when(webClientMock.get()).thenReturn(requestHeadersUriMock);
+        Mockito.when(requestHeadersUriMock.uri(anyString())).thenReturn(requestHeadersMock);
+        Mockito.when(requestHeadersMock.retrieve()).thenReturn(responseSpecMock);
+        Mockito.when(responseSpecMock.bodyToMono(String.class)).thenReturn(Mono.just("Mock response"));
 
-        // 正常系のテスト
-        when(responseSpecMock.bodyToMono(String.class)).thenReturn(Mono.just("Success Response"));
-        String response = webClient.get().uri("http://localhost").retrieve().bodyToMono(String.class).block();
-        System.out.println(response); // "Success Response"
-
-        // 404エラーのテスト
-        ClientResponse clientResponse404 = Mockito.mock(ClientResponse.class);
-        when(clientResponse404.statusCode()).thenReturn(HttpStatus.NOT_FOUND);
-        when(responseSpecMock.toBodilessEntity()).thenReturn(Mono.just(clientResponse404));
-        HttpStatus notFoundStatus = webClient.get().uri("http://localhost").retrieve().toBodilessEntity().block().getStatusCode();
-        System.out.println(notFoundStatus); // 404 NOT_FOUND
-
-        // 500エラーのテスト
-        ClientResponse clientResponse500 = Mockito.mock(ClientResponse.class);
-        when(clientResponse500.statusCode()).thenReturn(HttpStatus.INTERNAL_SERVER_ERROR);
-        when(responseSpecMock.toBodilessEntity()).thenReturn(Mono.just(clientResponse500));
-        HttpStatus internalServerErrorStatus = webClient.get().uri("http://localhost").retrieve().toBodilessEntity().block().getStatusCode();
-        System.out.println(internalServerErrorStatus); // 500 INTERNAL_SERVER_ERROR
+        try (MockedStatic<WebClient> webClientMockedStatic = Mockito.mockStatic(WebClient.class)) {
+            webClientMockedStatic.when(() -> WebClient.create(anyString())).thenReturn(webClientMock);
+            String result = MyClassUtils.request("http://localhost");
+            System.out.println(result);  // prints: "Mock response"
+        }
     }
 }
