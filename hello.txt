@@ -1,11 +1,47 @@
-WebClient.ResponseSpec responseSpecMock = Mockito.mock(WebClient.ResponseSpec.class);
-WebClient.RequestHeadersUriSpec requestHeadersUriSpecMock = Mockito.mock(WebClient.RequestHeadersUriSpec.class);
-WebClient.RequestHeadersSpec requestHeadersSpecMock = Mockito.mock(WebClient.RequestHeadersSpec.class);
-WebClient.RequestBodySpec requestBodySpecMock = Mockito.mock(WebClient.RequestBodySpec.class);
-ClientResponse clientResponseMock = Mockito.mock(ClientResponse.class);
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.reactive.function.client.*;
+import reactor.core.publisher.Mono;
 
-Mockito.when(webClient.get()).thenReturn(requestHeadersUriSpecMock);
-Mockito.when(requestHeadersUriSpecMock.uri(Mockito.any(URI.class))).thenReturn(requestHeadersSpecMock);
-Mockito.when(requestHeadersSpecMock.exchangeToMono(Mockito.any())).thenReturn(Mono.just(clientResponseMock));
+import java.net.URI;
 
-// Add your mock behaviour for the clientResponseMock
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+
+public class WebClientMockTest {
+
+    private WebClient webClient;
+    private WebClient.RequestHeadersUriSpec requestHeadersUriSpecMock;
+    private WebClient.RequestHeadersSpec requestHeadersSpecMock;
+    private ClientResponse clientResponseMock;
+
+    @BeforeEach
+    void setUp() {
+        webClient = Mockito.mock(WebClient.class);
+        requestHeadersUriSpecMock = Mockito.mock(WebClient.RequestHeadersUriSpec.class);
+        requestHeadersSpecMock = Mockito.mock(WebClient.RequestHeadersSpec.class);
+        clientResponseMock = Mockito.mock(ClientResponse.class);
+
+        when(webClient.get()).thenReturn(requestHeadersUriSpecMock);
+        when(requestHeadersUriSpecMock.uri(any(URI.class))).thenReturn(requestHeadersSpecMock);
+        when(requestHeadersSpecMock.exchangeToMono(any())).thenReturn(Mono.just(clientResponseMock));
+    }
+
+    @Test
+    void test404Error() {
+        when(clientResponseMock.statusCode()).thenReturn(HttpStatus.NOT_FOUND);
+
+        // Perform your WebClient request here.
+        // This should simulate a WebClient request which would end up in a 404 error.
+        webClient.get()
+                .uri(URI.create("http://localhost:8080"))
+                .exchangeToMono(response -> {
+                    if (response.statusCode().isError()) {
+                        System.out.println(response.statusCode());
+                    }
+                    return Mono.empty(); // Return an empty Mono to fulfill the Function's return requirement
+                }).block(); // Block to wait for the completion of the operation
+    }
+}
