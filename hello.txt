@@ -30,18 +30,21 @@ public class WebClientMockTest {
     }
 
     @Test
-    void test404Error() {
-        when(clientResponseMock.statusCode()).thenReturn(HttpStatus.NOT_FOUND);
+void test404Error() {
+    when(clientResponseMock.statusCode()).thenReturn(HttpStatus.NOT_FOUND);
 
-        // Perform your WebClient request here.
-        // This should simulate a WebClient request which would end up in a 404 error.
-        webClient.get()
-                .uri(URI.create("http://localhost:8080"))
-                .exchangeToMono(response -> {
-                    if (response.statusCode().isError()) {
-                        System.out.println(response.statusCode());
-                    }
-                    return Mono.empty(); // Return an empty Mono to fulfill the Function's return requirement
-                }).block(); // Block to wait for the completion of the operation
-    }
+    when(requestHeadersSpecMock.exchangeToMono(any())).thenAnswer(invocation -> {
+        Function<ClientResponse, Mono<Void>> function = invocation.getArgument(0);
+        return function.apply(clientResponseMock);
+    });
+
+    webClient.get()
+            .uri(URI.create("http://localhost:8080"))
+            .exchangeToMono(response -> {
+                if (response.statusCode().isError()) {
+                    System.out.println(response.statusCode());
+                }
+                return Mono.empty();
+            }).block();
+}
 }
