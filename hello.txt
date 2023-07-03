@@ -1,52 +1,11 @@
-@Test
-public void testRequest() {
-    WebClient webClientMock = Mockito.mock(WebClient.class);
-    WebClient.Builder builderMock = Mockito.mock(WebClient.Builder.class);
-    WebClient.RequestHeadersSpec requestHeadersMock = Mockito.mock(WebClient.RequestHeadersSpec.class);
-    WebClient.RequestHeadersUriSpec requestHeadersUriMock = Mockito.mock(WebClient.RequestHeadersUriSpec.class);
-    WebClient.ResponseSpec responseSpecMock = Mockito.mock(WebClient.ResponseSpec.class);
-
-    Mockito.when(builderMock.build()).thenReturn(webClientMock);
-    Mockito.when(builderMock.baseUrl(anyString())).thenReturn(builderMock);
-    Mockito.when(webClientMock.get()).thenReturn(requestHeadersUriMock);
-    Mockito.when(requestHeadersUriMock.uri(anyString())).thenReturn(requestHeadersMock);
-    Mockito.when(requestHeadersMock.retrieve()).thenReturn(responseSpecMock);
-    Mockito.when(responseSpecMock.bodyToMono(String.class)).thenReturn(Mono.just("Mock response"));
-
-    try (MockedStatic<WebClient> webClientMockedStatic = Mockito.mockStatic(WebClient.class)) {
-        webClientMockedStatic.when(WebClient::builder).thenReturn(builderMock);
-        String result = MyClassUtils.request("http://localhost");
-        System.out.println(result);  // prints: "Mock response"
-    }
-}
-
-
-
-// WebClient.RequestHeadersSpec<WebClient.ResponseSpec>のモックを作成
-WebClient.RequestHeadersSpec<ResponseSpec> requestHeadersMock = Mockito.mock(WebClient.RequestHeadersSpec.class);
-
-// WebClient.ResponseSpecのモックを作成
 WebClient.ResponseSpec responseSpecMock = Mockito.mock(WebClient.ResponseSpec.class);
+WebClient.RequestHeadersUriSpec requestHeadersUriSpecMock = Mockito.mock(WebClient.RequestHeadersUriSpec.class);
+WebClient.RequestHeadersSpec requestHeadersSpecMock = Mockito.mock(WebClient.RequestHeadersSpec.class);
+WebClient.RequestBodySpec requestBodySpecMock = Mockito.mock(WebClient.RequestBodySpec.class);
+ClientResponse clientResponseMock = Mockito.mock(ClientResponse.class);
 
-// WebClient.RequestHeadersUriSpec<WebClient.RequestHeadersSpec<WebClient.ResponseSpec>>のモックを作成
-WebClient.RequestHeadersUriSpec<WebClient.RequestHeadersSpec<WebClient.ResponseSpec>> requestHeadersUriMock = Mockito.mock(WebClient.RequestHeadersUriSpec.class);
+Mockito.when(webClient.get()).thenReturn(requestHeadersUriSpecMock);
+Mockito.when(requestHeadersUriSpecMock.uri(Mockito.any(URI.class))).thenReturn(requestHeadersSpecMock);
+Mockito.when(requestHeadersSpecMock.exchangeToMono(Mockito.any())).thenReturn(Mono.just(clientResponseMock));
 
-// WebClientのモックを作成
-WebClient webClientMock = Mockito.mock(WebClient.class);
-
-// WebClient.create()の戻り値をモックに設定
-Mockito.when(WebClient.create(any(String.class))).thenReturn(webClientMock);
-
-// webClientMock.get()の戻り値をモックに設定
-Mockito.when(webClientMock.get()).thenReturn(requestHeadersUriMock);
-
-// requestHeadersUriMock.uri()の戻り値をモックに設定
-Mockito.when(requestHeadersUriMock.uri(any(URI.class))).thenReturn(requestHeadersMock);
-
-// bodyToMonoのモック化
-Mono<MyClass> monoMock = Mono.just(new MyClass());
-Mockito.when(requestHeadersMock.exchangeToMono(any())).thenReturn(monoMock);
-
-// ここでテスト対象のメソッドを呼び出します
-// MyClassUtils.request("http://localhost");
-
+// Add your mock behaviour for the clientResponseMock
