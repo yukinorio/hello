@@ -1,50 +1,41 @@
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.reactive.function.client.*;
-import reactor.core.publisher.Mono;
-
-import java.net.URI;
+import org.springframework.web.reactive.function.client.ClientResponse;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
-public class WebClientMockTest {
-
-    private WebClient webClient;
-    private WebClient.RequestHeadersUriSpec requestHeadersUriSpecMock;
-    private WebClient.RequestHeadersSpec requestHeadersSpecMock;
-    private ClientResponse clientResponseMock;
-
-    @BeforeEach
-    void setUp() {
-        webClient = Mockito.mock(WebClient.class);
-        requestHeadersUriSpecMock = Mockito.mock(WebClient.RequestHeadersUriSpec.class);
-        requestHeadersSpecMock = Mockito.mock(WebClient.RequestHeadersSpec.class);
-        clientResponseMock = Mockito.mock(ClientResponse.class);
-
-        when(webClient.get()).thenReturn(requestHeadersUriSpecMock);
-        when(requestHeadersUriSpecMock.uri(any(URI.class))).thenReturn(requestHeadersSpecMock);
-        when(requestHeadersSpecMock.exchangeToMono(any())).thenReturn(Mono.just(clientResponseMock));
-    }
+class MyClassTest {
 
     @Test
-void test404Error() {
-    when(clientResponseMock.statusCode()).thenReturn(HttpStatus.NOT_FOUND);
+    void test404Error() {
+        try (MockedStatic<MyClass> myClassMockedStatic = Mockito.mockStatic(MyClass.class)) {
 
-    when(requestHeadersSpecMock.exchangeToMono(any())).thenAnswer(invocation -> {
-        Function<ClientResponse, Mono<Void>> function = invocation.getArgument(0);
-        return function.apply(clientResponseMock);
-    });
+            WebClient.RequestHeadersSpec requestHeadersSpecMock = mock(WebClient.RequestHeadersSpec.class);
+            WebClient.RequestHeadersUriSpec requestHeadersUriSpecMock = mock(WebClient.RequestHeadersUriSpec.class);
+            WebClient webClientMock = mock(WebClient.class);
+            ClientResponse clientResponseMock = mock(ClientResponse.class);
 
-    webClient.get()
-            .uri(URI.create("http://localhost:8080"))
-            .exchangeToMono(response -> {
-                if (response.statusCode().isError()) {
-                    System.out.println(response.statusCode());
-                }
+            when(webClientMock.get()).thenReturn(requestHeadersUriSpecMock);
+            when(requestHeadersUriSpecMock.uri(any(URI.class))).thenReturn(requestHeadersSpecMock);
+            when(requestHeadersSpecMock.exchangeToMono(any())).thenAnswer(invocation -> {
+                Function<ClientResponse, Mono<Void>> function = invocation.getArgument(0);
+                function.apply(clientResponseMock);
                 return Mono.empty();
-            }).block();
-}
+            });
+            when(clientResponseMock.statusCode()).thenReturn(HttpStatus.NOT_FOUND);
+
+            // Assume MyClass.request() uses WebClient.builder().build() internally
+            myClassMockedStatic.when(MyClass::request).thenCallRealMethod();
+            try (MockedStatic<WebClient> webClientMockedStatic = Mockito.mockStatic(WebClient.class)) {
+                webClientMockedStatic.when(WebClient::builder).thenReturn(mock(WebClient.Builder.class));
+                when(WebClient.builder().build()).thenReturn(webClientMock);
+
+                MyClass.request();  // Calls the real method, but with mocked WebClient
+            }
+        }
+    }
 }
