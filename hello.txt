@@ -15,3 +15,8 @@ SelectStatementProvider selectStatement = SqlBuilder.select(columnList(id, minLa
     })
     .build()
     .render(RenderingStrategies.MYBATIS3);
+
+SELECT id, minLat, maxLat, minLng, maxLng
+FROM tableName
+WHERE ((minLat <= 90.0 AND maxLat >= -90.0) OR (minLat IS NULL AND maxLat IS NULL))
+AND ((minLng <= 180.0 AND maxLng >= -180.0) OR (minLng IS NULL AND maxLng IS NULL))
