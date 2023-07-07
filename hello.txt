@@ -1,8 +1,17 @@
+String minLat = "minLat";
+String maxLat = "maxLat";
+String minLng = "minLng";
+String maxLng = "maxLng";
+
 SelectStatementProvider selectStatement = SqlBuilder.select(columnList(id, minLat, maxLat, minLng, maxLng))
     .from(tableName)
-    .applyWhere(p -> p.where(minLat, isLessThanOrEqualTo(90)).and(maxLat, isGreaterThanOrEqualTo(-90)), 
-                p -> p.or(minLat, isNull()).and(maxLat, isNull()))
-    .applyWhere(p -> p.where(minLng, isLessThanOrEqualTo(180)).and(maxLng, isGreaterThanOrEqualTo(-180)), 
-                p -> p.or(minLng, isNull()).and(maxLng, isNull()))
+    .applyWhere(p -> {
+        p.where(minLat, isLessThanOrEqualTo(90.0)).and(maxLat, isGreaterThanOrEqualTo(-90.0));
+        p.or(minLat, isNull()).and(maxLat, isNull());
+    })
+    .applyWhere(p -> {
+        p.where(minLng, isLessThanOrEqualTo(180.0)).and(maxLng, isGreaterThanOrEqualTo(-180.0));
+        p.or(minLng, isNull()).and(maxLng, isNull());
+    })
     .build()
     .render(RenderingStrategies.MYBATIS3);
