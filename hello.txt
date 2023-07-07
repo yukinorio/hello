@@ -1,1 +1,4 @@
-SELECT id, minLat, maxLat FROM tableName WHERE (minlat <= -90 AND maxlat <= 90) OR (minlat IS NULL AND maxlat IS NULL)
+SELECT id, minLng, maxLng 
+FROM tableName 
+WHERE ((minLat <= 90 AND maxLat >= -90) OR (minLat IS NULL AND maxLat IS NULL)) 
+AND ((minLng <= 180 AND maxLng >= -180) OR (minLng IS NULL AND maxLng IS NULL))
