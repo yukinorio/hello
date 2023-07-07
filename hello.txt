@@ -1,4 +1,8 @@
-SELECT id, minLng, maxLng 
-FROM tableName 
-WHERE ((minLat <= 90 AND maxLat >= -90) OR (minLat IS NULL AND maxLat IS NULL)) 
-AND ((minLng <= 180 AND maxLng >= -180) OR (minLng IS NULL AND maxLng IS NULL))
+SelectStatementProvider selectStatement = SqlBuilder.select(columnList(id, minLat, maxLat, minLng, maxLng))
+    .from(tableName)
+    .applyWhere(p -> p.where(minLat, isLessThanOrEqualTo(90)).and(maxLat, isGreaterThanOrEqualTo(-90)), 
+                p -> p.or(minLat, isNull()).and(maxLat, isNull()))
+    .applyWhere(p -> p.where(minLng, isLessThanOrEqualTo(180)).and(maxLng, isGreaterThanOrEqualTo(-180)), 
+                p -> p.or(minLng, isNull()).and(maxLng, isNull()))
+    .build()
+    .render(RenderingStrategies.MYBATIS3);
