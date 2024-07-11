@@ -7,8 +7,11 @@
     <title>Grafana Dashboard Time Range Update</title>
 </head>
 <body>
-    <h1>Update Grafana Dashboard Time Range</h1>
+    <h1>Grafana Dashboard</h1>
+    <iframe id="grafanaFrame" src="http://YOUR_GRAFANA_URL/d/YOUR_DASHBOARD_UID" width="100%" height="600"></iframe>
+    <h2>Update Grafana Dashboard Time Range</h2>
     <button onclick="updateDashboardTimeRange()">Update Time Range</button>
+    <p id="message"></p>
 
     <script>
         const dashboardUid = 'YOUR_DASHBOARD_UID';
@@ -23,7 +26,12 @@
                     'Authorization': `Bearer ${apiKey}`
                 }
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
             .then(data => {
                 console.log('Dashboard data:', data);
                 const dashboard = data.dashboard;
@@ -35,7 +43,7 @@
                 };
 
                 // 更新したダッシュボードデータを送信
-                const updateApiUrl = 'http://YOUR_GRAFANA_URL/api/dashboards/db';
+                const updateApiUrl = `http://YOUR_GRAFANA_URL/api/dashboards/db`;
                 
                 return fetch(updateApiUrl, {
                     method: 'POST',
@@ -49,16 +57,27 @@
                     })
                 });
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
             .then(data => {
                 console.log('Dashboard updated:', data);
+                document.getElementById('message').textContent = 'Dashboard time range updated successfully!';
+                // ダッシュボードのiFrameをリロード
+                const iframe = document.getElementById('grafanaFrame');
+                iframe.src = iframe.src;
             })
             .catch(error => {
                 console.error('Error updating dashboard:', error);
+                document.getElementById('message').textContent = 'Failed to update dashboard time range.';
             });
         }
     </script>
 </body>
 </html>
+
 
 ```
