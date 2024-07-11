@@ -1,3 +1,4 @@
+```
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -24,3 +25,4 @@
     <button onclick="updateTimeRange('now-1d', 'now')">Last 24 Hours</button>
 </body>
 </html>
+```
