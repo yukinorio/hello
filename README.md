@@ -4,80 +4,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Grafana Dashboard Time Range Update</title>
+    <title>Grafana Variable Update</title>
 </head>
 <body>
-    <h1>Grafana Dashboard</h1>
+    <h1>Update Grafana Variable</h1>
     <iframe id="grafanaFrame" src="http://YOUR_GRAFANA_URL/d/YOUR_DASHBOARD_UID" width="100%" height="600"></iframe>
-    <h2>Update Grafana Dashboard Time Range</h2>
-    <button onclick="updateDashboardTimeRange()">Update Time Range</button>
-    <p id="message"></p>
+    <button onclick="updateGrafanaVariable('varName', 'varValue')">Update Variable</button>
 
     <script>
-        const dashboardUid = 'YOUR_DASHBOARD_UID';
-        const apiUrl = `http://YOUR_GRAFANA_URL/api/dashboards/uid/${dashboardUid}`;
-        const apiKey = 'YOUR_API_KEY';
+        function updateGrafanaVariable(varName, varValue) {
+            const iframe = document.getElementById('grafanaFrame');
 
-        function updateDashboardTimeRange() {
-            fetch(apiUrl, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${apiKey}`
-                }
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log('Dashboard data:', data);
-                const dashboard = data.dashboard;
+            // Check if the iframe content is accessible
+            if (iframe.contentWindow && iframe.contentWindow.angular) {
+                const contentWindow = iframe.contentWindow;
 
-                // 新しい時間範囲を設定
-                dashboard.time = {
-                    from: 'now-12h', // 例: 12時間前から
-                    to: 'now'        // 例: 現在まで
-                };
+                try {
+                    const varService = contentWindow.angular
+                      .element('grafana-app')
+                      .injector()
+                      .get('variableSrv');
 
-                // 更新したダッシュボードデータを送信
-                const updateApiUrl = `http://YOUR_GRAFANA_URL/api/dashboards/db`;
-                
-                return fetch(updateApiUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${apiKey}`
-                    },
-                    body: JSON.stringify({
-                        dashboard: dashboard,
-                        overwrite: true
-                    })
-                });
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
+                    const dashboard = contentWindow.angular
+                      .element('grafana-app')
+                      .injector()
+                      .get('dashboardSrv').dashboard;
+
+                    const v = varService.templateSrv.variables.find(
+                      ({ name }) => name === varName
+                    );
+
+                    if (!!v) {
+                      varService.setOptionAsCurrent(v, { text: varValue, value: varValue });
+                      varService.variableUpdated(v, false); // false to update manually via dashboard object
+
+                      dashboard.templateVariableValueUpdated();
+                      dashboard.startRefresh();
+                    } else {
+                      console.error('Variable not found');
+                    }
+                } catch (error) {
+                    console.error('Error accessing AngularJS services:', error);
                 }
-                return response.json();
-            })
-            .then(data => {
-                console.log('Dashboard updated:', data);
-                document.getElementById('message').textContent = 'Dashboard time range updated successfully!';
-                // ダッシュボードのiFrameをリロード
-                const iframe = document.getElementById('grafanaFrame');
-                iframe.src = iframe.src;
-            })
-            .catch(error => {
-                console.error('Error updating dashboard:', error);
-                document.getElementById('message').textContent = 'Failed to update dashboard time range.';
-            });
+            } else {
+                console.error('Cannot access iframe content or AngularJS');
+            }
         }
     </script>
 </body>
 </html>
+
 
 
 ```
