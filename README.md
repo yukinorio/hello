@@ -1,59 +1,43 @@
 ```
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Grafana Variable Update</title>
-</head>
-<body>
-    <h1>Update Grafana Variable</h1>
-    <iframe id="grafanaFrame" src="http://YOUR_GRAFANA_URL/d/YOUR_DASHBOARD_UID" width="100%" height="600"></iframe>
-    <button onclick="updateGrafanaVariable('varName', 'varValue')">Update Variable</button>
+Grafana ver11.1.0
 
-    <script>
-        function updateGrafanaVariable(varName, varValue) {
-            const iframe = document.getElementById('grafanaFrame');
+■iframe
+irfame全体の読み込みを防止したい（回答なし）
+https://community.grafana.com/t/prevent-full-iframe-reloading-when-variable-changed-for-grafana-url/33933
 
-            // Check if the iframe content is accessible
-            if (iframe.contentWindow && iframe.contentWindow.angular) {
-                const contentWindow = iframe.contentWindow;
+iframeのsrcを変更した時に画面が更新されない方法はあるか？（未解決）
+https://community.grafana.com/t/prevent-iframe-from-reloading-when-a-variable-passed-as-a-parameter-is-updated/29799
 
-                try {
-                    const varService = contentWindow.angular
-                      .element('grafana-app')
-                      .injector()
-                      .get('variableSrv');
+リロードせずにレンジは変更できるか（回答なし）
+https://community.grafana.com/t/how-to-change-a-embeded-grafana-page-s-timerange-without-reload/41287
 
-                    const dashboard = contentWindow.angular
-                      .element('grafana-app')
-                      .injector()
-                      .get('dashboardSrv').dashboard;
+iframeのパネルをスムーズに操作したい（回答なし。AngularやReactで解決できるという話題がある）
+https://community.grafana.com/t/how-can-i-interact-with-shared-panel-by-vue-js/38647
 
-                    const v = varService.templateSrv.variables.find(
-                      ({ name }) => name === varName
-                    );
+ダッシュボードにある時間範囲の変更を埋め込むことはできるか？（回答なし）
+https://community.grafana.com/t/embed-common-time-range-controls-in-iframe-with-dashboard/31258
 
-                    if (!!v) {
-                      varService.setOptionAsCurrent(v, { text: varValue, value: varValue });
-                      varService.variableUpdated(v, false); // false to update manually via dashboard object
+リロードせずにレンジを変更できるか？（回答なし）
+https://community.grafana.com/t/how-to-change-a-embeded-grafana-page-s-timerange-without-reload/41287
 
-                      dashboard.templateVariableValueUpdated();
-                      dashboard.startRefresh();
-                    } else {
-                      console.error('Variable not found');
-                    }
-                } catch (error) {
-                    console.error('Error accessing AngularJS services:', error);
-                }
-            } else {
-                console.error('Cannot access iframe content or AngularJS');
-            }
-        }
-    </script>
-</body>
-</html>
+■解決策？
+Angularで書き換える（今はReactだから微妙に使えないかも）
+https://community.grafana.com/t/interact-with-embedded-dashboards/3408
+
+■postMessage
+postMessageを使って書き換えられないか（回答なし）
+https://community.grafana.com/t/support-for-navigating-an-embedded-grafana-using-postmessage/48459
+
+■Angular
+TimePickerの操作方法
+https://stackoverflow.com/questions/52070668/calling-grafana-angular-timepickerctrl-function-from-javascript
 
 
+■iframeの連携は無理？（Timepickerを操作できるか？）
+https://community.grafana.com/t/timepicker-for-iframe-panels/2285/2
 
+
+■その他
+HTMLパネルの更新
+https://community.grafana.com/t/html-panel-refresh/4031
 ```
