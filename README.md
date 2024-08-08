@@ -1,3 +1,4 @@
+```
 import jwt
 import datetime
 
@@ -39,7 +40,7 @@ if is_valid:
     print("Token is valid. Payload:", message)
 else:
     print("Token is not valid:", message)
-
+```
 
 
 
