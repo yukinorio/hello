@@ -1,18 +1,45 @@
-```
-server {
-    ...
+import jwt
+import datetime
 
-    location /grafana/ {
-        proxy_pass http://localhost:3000;
-        proxy_set_header Authorization "Bearer your_api_key";
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
+# 秘密鍵と公開鍵（ここでは同じものを使用していますが、実際には異なる鍵を使用します）
+SECRET_KEY = "your_secret_key"
+
+def create_jwt(user_id):
+    """JWTを生成する関数"""
+    expiration_time = datetime.datetime.utcnow() + datetime.timedelta(days=1)  # 1日後に期限切れ
+    payload = {
+        "sub": user_id,  # subject, 通常はユーザーID
+        "iat": datetime.datetime.utcnow(),  # issued at（発行時間）
+        "exp": expiration_time  # expiration time（有効期限）
     }
+    token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
+    return token
 
-    ...
-}
+def verify_jwt(token):
+    """JWTを検証する関数"""
+    try:
+        # decodeが成功すれば、payloadが返される
+        payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        return True, payload
+    except jwt.ExpiredSignatureError:
+        # トークンの期限が切れている場合
+        return False, "Token expired"
+    except jwt.InvalidTokenError:
+        # トークンが無効な場合
+        return False, "Invalid token"
+
+# ユーザー認証（サンプルとしてIDを直接指定）
+user_id = "12345"
+token = create_jwt(user_id)
+print("Generated JWT:", token)
+
+# 生成されたJWTの検証
+is_valid, message = verify_jwt(token)
+if is_valid:
+    print("Token is valid. Payload:", message)
+else:
+    print("Token is not valid:", message)
+
 
 
 
