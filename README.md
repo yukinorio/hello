@@ -1,4 +1,4 @@
-
+```
 <bean id="customObjectMapper" class="com.fasterxml.jackson.databind.ObjectMapper">
     <property name="dateFormat">
         <bean class="com.fasterxml.jackson.databind.util.StdDateFormat" />
@@ -16,3 +16,4 @@
         </bean>
     </mvc:message-converters>
 </mvc:annotation-driven>
+```
