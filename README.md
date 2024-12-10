@@ -16,4 +16,15 @@
         </bean>
     </mvc:message-converters>
 </mvc:annotation-driven>
+
+<bean id="customObjectMapper" class="com.fasterxml.jackson.databind.ObjectMapper">
+    <property name="dateFormat">
+        <bean class="com.fasterxml.jackson.databind.util.StdDateFormat" />
+    </property>
+    <property name="modules">
+        <list>
+            <bean class="com.fasterxml.jackson.datatype.jsr310.JavaTimeModule" />
+        </list>
+    </property>
+</bean>
 ```
